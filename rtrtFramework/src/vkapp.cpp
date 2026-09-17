@@ -35,7 +35,7 @@ void VkApp::createAllVulkanResources()
     assert(m_instance);
     createPhysicalDevice();		// -> m_physicalDevice i.e. the GPU
     chooseQueueIndex();              // -> m_graphicsQueueIndex
-    //createDevice();			// -> m_device
+    createDevice();			// -> m_device
     //getCommandQueue();               // -> m_queue
     //loadExtensions();		// Auto generated; loads namespace of all known extensions
     //getSurface(); 			// -> m_surface

@@ -205,6 +205,14 @@ void VkApp::chooseQueueIndex()
     // that has the required flags in queueProperties[i].queueFlags.  Record the index in
     // m_graphicsQueueIndex.
 
+    int i = 0;
+    for (const auto& queueProperty : queueProperties) {
+        if (queueProperty.queueFlags & requiredQueueFlags) {
+            m_graphicsQueueIndex = i;
+        }
+        ++i;
+    }
+
     // Nothing to destroy as m_graphicsQueueIndex is just an integer.
 }
 
@@ -220,22 +228,34 @@ void VkApp::createDevice()
     
     // =============
     VkPhysicalDeviceRayTracingPipelineFeaturesKHR rtPipelineFeature{
-        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR};
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR,
+        NULL
+    };
     
     VkPhysicalDeviceAccelerationStructureFeaturesKHR accelFeature{
-        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR};
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR,
+        &rtPipelineFeature
+    };
     
     VkPhysicalDeviceVulkan13Features features13{
-        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+        &accelFeature
+    };
     
     VkPhysicalDeviceVulkan12Features features12{
-        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES};
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+        &features13
+    };
     
     VkPhysicalDeviceVulkan11Features features11{
-        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES};
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
+        &features12
+    };
     
     VkPhysicalDeviceFeatures2 features2{
-        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+        & features11
+    };
     // =============
     
     // Ask Vulkan to fill in all structures on the pNext chain
@@ -260,10 +280,13 @@ void VkApp::createDevice()
     deviceCreateInfo.enabledExtensionCount   = static_cast<uint32_t>(reqDeviceExtensions.size());
     deviceCreateInfo.ppEnabledExtensionNames = reqDeviceExtensions.data();
 
-    vkCreateDevice(m_physicalDevice, &deviceCreateInfo, nullptr, &m_device);
+    //vkCreateDevice(m_physicalDevice, &deviceCreateInfo, nullptr, &m_device);
 
     // @@ Verify success of vkCreateDevice.
     // To destroy: vkDestroyDevice(m_device, nullptr);
+    if (vkCreateDevice(m_physicalDevice, &deviceCreateInfo, nullptr, &m_device) != VK_SUCCESS)
+        throw std::runtime_error("vkCreateDevice failed.");
+
 }
 
 void VkApp::getCommandQueue()
