@@ -36,9 +36,9 @@ void VkApp::createAllVulkanResources()
     createPhysicalDevice();		// -> m_physicalDevice i.e. the GPU
     chooseQueueIndex();              // -> m_graphicsQueueIndex
     createDevice();			// -> m_device
-    //getCommandQueue();               // -> m_queue
-    //loadExtensions();		// Auto generated; loads namespace of all known extensions
-    //getSurface(); 			// -> m_surface
+    getCommandQueue();               // -> m_queue
+    loadExtensions();		// Auto generated; loads namespace of all known extensions
+    getSurface(); 			// -> m_surface
 
     //createSwapchain();		// -> m_swapchain
     //createCommandPool();		// -> m_cmdPool..

@@ -207,8 +207,9 @@ void VkApp::chooseQueueIndex()
 
     int i = 0;
     for (const auto& queueProperty : queueProperties) {
-        if (queueProperty.queueFlags & requiredQueueFlags) {
+        if ((queueProperty.queueFlags & requiredQueueFlags) == requiredQueueFlags) {
             m_graphicsQueueIndex = i;
+            break;
         }
         ++i;
     }
@@ -254,7 +255,7 @@ void VkApp::createDevice()
     
     VkPhysicalDeviceFeatures2 features2{
         VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
-        & features11
+        &features11
     };
     // =============
     
@@ -337,12 +338,24 @@ void VkApp::getSurface()
 {
     VkBool32 isSupported;   // Supports drawing(presenting) on a screen
 
-    glfwCreateWindowSurface(m_instance, app->GLFW_window, nullptr, &m_surface);
-    vkGetPhysicalDeviceSurfaceSupportKHR(m_physicalDevice, m_graphicsQueueIndex,
-                                         m_surface, &isSupported);
+    //glfwCreateWindowSurface(m_instance, app->GLFW_window, nullptr, &m_surface);
+    //vkGetPhysicalDeviceSurfaceSupportKHR(m_physicalDevice, m_graphicsQueueIndex,
+                                         //m_surface, &isSupported);
     // @@ Verify success of glfwCreateWindowSurface.
+    if (glfwCreateWindowSurface(m_instance, app->GLFW_window, nullptr, &m_surface) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create window surface!");
+    }
     // @@ Verify success of vkGetPhysicalDeviceSurfaceSupportKHR.
+    if (vkGetPhysicalDeviceSurfaceSupportKHR(m_physicalDevice, m_graphicsQueueIndex,
+        m_surface, &isSupported) != VK_SUCCESS)
+    {
+		throw std::runtime_error("failed to get physical device surface support!");
+    }
     // @@ Verify isSupported==VK_TRUE, meaning that Vulkan supports presenting on this surface.
+    if (isSupported != VK_TRUE) 
+    {
+		throw std::runtime_error("Vulkan does not support presenting on this surface!");
+    }
     // @@ To destroy: vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
 }
 
