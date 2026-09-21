@@ -9,10 +9,11 @@ void VkApp::drawFrame()
     // following 4 lines.  All the Project 1 Vulkan initialization
     // steps must be completed first.
   
-    // if (acquireFrame()) {
-    //     renderGui();
-    //     renderFrame();
-    //     submitFrame(); }
+     //if (acquireFrame()) {
+     //    renderGui();
+     //    renderFrame();
+     //    submitFrame(); 
+     //}
 }
 
 bool VkApp::acquireFrame()
@@ -41,10 +42,10 @@ bool VkApp::acquireFrame()
 void VkApp::renderFrame()
 {
     
-    // VkCommandBufferBeginInfo beginInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
-    // beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+     //VkCommandBufferBeginInfo beginInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
+     //beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     
-    // vkBeginCommandBuffer(m_commandBuffer, &beginInfo);
+     //vkBeginCommandBuffer(m_commandBuffer, &beginInfo);
     {   // Extra indent for code clarity
         // updateCameraBuffer();
         
@@ -55,9 +56,9 @@ void VkApp::renderFrame()
         // } else
         //     rasterize();
         
-        // postProcess(); //  tone mapper and output to swapchain image.
+         //postProcess(); //  tone mapper and output to swapchain image.
     }   // Done recording;  Execute!
-    // vkEndCommandBuffer(m_commandBuffer);
+     //vkEndCommandBuffer(m_commandBuffer);
     
 }
 
@@ -109,6 +110,9 @@ void VkApp::submitFrame()
     m_commandBuffer = m_commandBuffers[currentFrame];
 
     // @@ Verify success of vkQueueSubmit and vkQueuePresentKHR
+    VkResult result = vkQueuePresentKHR(m_queue, &presentInfo);
+    if (result != VK_SUCCESS && result != VK_ERROR_OUT_OF_DATE_KHR)
+        throw std::runtime_error("failed vkQueuePresentKHR");
 }
 
 

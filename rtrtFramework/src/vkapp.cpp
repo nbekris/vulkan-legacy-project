@@ -40,12 +40,12 @@ void VkApp::createAllVulkanResources()
     loadExtensions();		// Auto generated; loads namespace of all known extensions
     getSurface(); 			// -> m_surface
 
-    //createSwapchain();		// -> m_swapchain
-    //createCommandPool();		// -> m_cmdPool..
-    //createDepthResource();    	// -> m_depthImage, ...
+    createSwapchain();		// -> m_swapchain
+    createCommandPool();		// -> m_cmdPool..
+    createDepthResource();    	// -> m_depthImage, ...
     //createRenderTarget();   	  	// -> m_renderTarget
     //createPostDescriptor();     	// -> m_postDesc
-    //createPostPipeline();       	// -> m_postPipelineLayout
+    createPostPipeline();       	// -> m_postPipelineLayout // Finish Reszie logic bruh
 
     #ifdef GUI
     initGUI();
@@ -78,9 +78,9 @@ void VkApp::createAllVulkanResources()
 void VkApp::destroyAllVulkanResources()
 {
     // @@  Uncomment these 3 lines when directed to do so at the end of project 1.
-    //vkWaitForFences(m_device, 1, &m_inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
-    //vkResetFences(m_device, 1, &m_inFlightFences[currentFrame]);
-    //vkDeviceWaitIdle(m_device);
+    vkWaitForFences(m_device, 1, &m_inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+    vkResetFences(m_device, 1, &m_inFlightFences[currentFrame]);
+    vkDeviceWaitIdle(m_device);
     
     #ifdef GUI
     ImGui_ImplVulkan_Shutdown();
@@ -88,15 +88,22 @@ void VkApp::destroyAllVulkanResources()
     #endif
 
     // Destroy here all Vulkan objects as directed by various @@ comments.
+    vkDestroyInstance(m_instance, nullptr);
+    vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
+    destroySwapchain();
+    vkDestroyCommandPool(m_device, m_cmdPool, nullptr);
+    m_depthImage.destroy(m_device);
+    vkDestroyPipelineLayout(m_device, m_postPipelineLayout, nullptr);
+    vkDestroyPipeline(m_device, m_postPipeline, nullptr);
     
     // All objects created on m_device must be destroyed before m_device.
-    // vkDestroyDevice(m_device, nullptr);
-    // vkDestroyInstance(m_instance, nullptr);
+     //vkDestroyDevice(m_device, nullptr);
+     //vkDestroyInstance(m_instance, nullptr);
 }
 
 void VkApp::recreateSizedVulkanResources()
 {
-    vkDeviceWaitIdle(m_device);
+    //vkDeviceWaitIdle(m_device);
 
     // @@ Delete this throw when you are ready to handle resize events:
     throw std::runtime_error("Not ready for resize events.");

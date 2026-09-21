@@ -301,24 +301,29 @@ void VkApp::getCommandQueue()
 void VkApp::createCommandPool()
 {
     VkCommandPoolCreateInfo poolCreateInfo{VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO};
-    poolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    poolCreateInfo.flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     poolCreateInfo.queueFamilyIndex = m_graphicsQueueIndex;
-    vkCreateCommandPool(m_device, &poolCreateInfo, nullptr, &m_cmdPool);
-    
+    VkResult cmdPoolResult          = vkCreateCommandPool(m_device, &poolCreateInfo, nullptr, &m_cmdPool);
+
     // Create command buffers
     m_commandBuffers.resize(m_imageCount);
     VkCommandBufferAllocateInfo allocateInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
     allocateInfo.commandPool        = m_cmdPool;
     allocateInfo.commandBufferCount = m_imageCount;
     allocateInfo.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    vkAllocateCommandBuffers(m_device, &allocateInfo, m_commandBuffers.data());
+	VkResult cmdBufferResult        = vkAllocateCommandBuffers(m_device, &allocateInfo, m_commandBuffers.data());
 
     // always keep these two in sync
     currentFrame = 0;
     m_commandBuffer = m_commandBuffers[currentFrame];
     // @@ Verify success of vkCreateCommandPool
+	if (cmdPoolResult != VK_SUCCESS) {
+		throw std::runtime_error("failed to create command pool!");
+	}
     // @@ Verify success of vkAllocateCommandBuffers
-    
+	if (cmdBufferResult != VK_SUCCESS) {
+		throw std::runtime_error("failed to allocate command buffers!");
+	}
     // @@ Destroy: m_cmdPool with vkDestroyCommandPool(m_device, m_cmdPool, nullptr);
     //    No need to destroy m_commandBuffers[] as the pool owns them.
 }
@@ -389,29 +394,63 @@ void VkApp::createSwapchain()
     // high-end windows desktop does; My higher-end Linux laptop
     // doesn't.
 
+    std::vector<VkPresentModeKHR> presentModes;
+    vkGetPhysicalDeviceSurfacePresentModesKHR(m_physicalDevice, m_surface, &m_imageCount, nullptr);
+    presentModes.resize(m_imageCount);
+    vkGetPhysicalDeviceSurfacePresentModesKHR(m_physicalDevice, m_surface, &m_imageCount, presentModes.data());
+
+	for (const auto& presentMode : presentModes) {
+		printf("Present Mode Found: %d\n", presentMode);
+	}
+
     // Choose VK_PRESENT_MODE_FIFO_KHR as a default (this must be supported)
     VkPresentModeKHR swapchainPresentMode = VK_PRESENT_MODE_FIFO_KHR; // Support is required.
     // @@ But choose VK_PRESENT_MODE_MAILBOX_KHR if it can be found in
     // the retrieved presentModes. Several Vulkan tutorials opine that
     // MODE_MAILBOX is the premier mode, but this may not be best for
     // us.
-  
 
+    for (const auto& availablePresentMode : presentModes) {
+        if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
+            swapchainPresentMode = availablePresentMode;
+            break;
+        }
+    }
+  
     // Get the list of VkFormat's that are supported:
     // @@ Do the three step process to retrieve a list of surface formats into
     //   std::vector<VkSurfaceFormatKHR> formats;
     // using  vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice, m_surface, &count, nullptr);
     // @@ Document the list you get.
 
+    std::vector<VkSurfaceFormatKHR> formats;
+	vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice, m_surface, &m_imageCount, nullptr);
+    formats.resize(m_imageCount);
+    vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice, m_surface, &m_imageCount, formats.data());
+
+    for (const auto& format : formats) {
+		// Print out the format and color space for each surface format
+		printf("Surface Format: %d, Color Space: %d\n", format.format, format.colorSpace);
+    }
+
     // @@ Choose the surface format and color space here:
     // Start with the first pair
-    //  m_surfaceFormat = formats[0].format;
-    //  m_surfaceColor  = formats[0].colorSpace;
+    m_surfaceFormat = formats[0].format;
+    m_surfaceColor  = formats[0].colorSpace;
 
     // @@ Then search the formats (from several lines up) to choose
     // format VK_FORMAT_B8G8R8A8_UNORM (and its color space) if such
     // exists.  Document your list of formats/color-spaces, and your
     // particular choice.
+
+    for (const auto& availableFormat : formats) {
+        if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+            m_surfaceFormat = availableFormat.format;
+            m_surfaceColor = availableFormat.colorSpace;
+            printf("Selected Surface Format: %d, Color Space: %d\n", availableFormat.format, availableFormat.colorSpace);
+            break;
+        }
+    }
     
     // Get the swap chain extent
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
@@ -458,15 +497,22 @@ void VkApp::createSwapchain()
     createInfo.oldSwapchain             = oldSwapchain;
     createInfo.clipped                  = true;
 
-    vkCreateSwapchainKHR(m_device, &createInfo, nullptr, &m_swapchain);
-    
     // @@ Verify success of vkCreateSwapchainKHR
+    if (vkCreateSwapchainKHR(m_device, &createInfo, nullptr, &m_swapchain) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create swap chain!");
+    }
     
     // @@ Do the three step process to retrieve the list of swapchain images into
     //    std::vector<VkImage> m_swapchainImages;
     // using call vkGetSwapchainImagesKHR(m_device, m_swapchain, &m_imageCount, nullptr);
-    
+	std::vector<VkImage> m_swapchainImages;
+    vkGetSwapchainImagesKHR(m_device, m_swapchain, &m_imageCount, nullptr);
+    m_swapchainImages.resize(m_imageCount);
+
     // @@ Verify success of vkGetSwapchainImagesKHR
+    if (vkGetSwapchainImagesKHR(m_device, m_swapchain, &m_imageCount, m_swapchainImages.data()) != VK_SUCCESS) {
+        throw std::runtime_error("failed to retrieve swap chain images!");
+    }
 
     // Resize containers for objects that are created for each swapchain image.
     m_imageViews.resize(m_imageCount);
@@ -515,11 +561,23 @@ void VkApp::createSwapchain()
 
 void VkApp::destroySwapchain()
 {
-    // @@ In a loop (0 to <m_imageCount) destroy ALL m_imageViews and synchronization items:
-    //      vkDestroyImageView(m_device, m_imageViews[i], nullptr);
-    //      vkDestroyFence(m_device, m_inFlightFences[i], nullptr);
-    //      vkDestroySemaphore(m_device, m_imageAvailableSemaphores[i], nullptr);
-    //      vkDestroySemaphore(m_device, m_renderFinishedSemaphores[i], nullptr);
-    // @@ Destroy the actual swapchain with:
-    //      vkDestroySwapchainKHR(m_device, m_swapchain, nullptr);
+    // In a loop (0 to <m_imageCount) destroy ALL m_imageViews and
+    // synchronization items before destroying the swapchain itself.
+    for (uint32_t i = 0; i < m_imageCount; ++i) {
+        vkDestroyImageView(m_device, m_imageViews[i], nullptr);
+        vkDestroyFence(m_device, m_inFlightFences[i], nullptr);
+        vkDestroySemaphore(m_device, m_imageAvailableSemaphores[i], nullptr);
+        vkDestroySemaphore(m_device, m_renderFinishedSemaphores[i], nullptr);
+    }
+
+    // Destroy the actual swapchain after all of its dependent resources.
+    vkDestroySwapchainKHR(m_device, m_swapchain, nullptr);
+
+    m_imageViews.clear();
+    m_inFlightFences.clear();
+    m_imageAvailableSemaphores.clear();
+    m_renderFinishedSemaphores.clear();
+    m_swapchainImages.clear();
+    m_swapchain = VK_NULL_HANDLE;
+    m_imageCount = 0;
 }
