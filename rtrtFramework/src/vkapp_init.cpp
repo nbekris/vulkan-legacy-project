@@ -343,9 +343,6 @@ void VkApp::getSurface()
 {
     VkBool32 isSupported;   // Supports drawing(presenting) on a screen
 
-    //glfwCreateWindowSurface(m_instance, app->GLFW_window, nullptr, &m_surface);
-    //vkGetPhysicalDeviceSurfaceSupportKHR(m_physicalDevice, m_graphicsQueueIndex,
-                                         //m_surface, &isSupported);
     // @@ Verify success of glfwCreateWindowSurface.
     if (glfwCreateWindowSurface(m_instance, app->GLFW_window, nullptr, &m_surface) != VK_SUCCESS) {
         throw std::runtime_error("failed to create window surface!");
@@ -394,10 +391,10 @@ void VkApp::createSwapchain()
     // high-end windows desktop does; My higher-end Linux laptop
     // doesn't.
 
-    std::vector<VkPresentModeKHR> presentModes;
-    vkGetPhysicalDeviceSurfacePresentModesKHR(m_physicalDevice, m_surface, &m_imageCount, nullptr);
-    presentModes.resize(m_imageCount);
-    vkGetPhysicalDeviceSurfacePresentModesKHR(m_physicalDevice, m_surface, &m_imageCount, presentModes.data());
+    uint count;
+    vkGetPhysicalDeviceSurfacePresentModesKHR(m_physicalDevice, m_surface, &count, nullptr);
+    std::vector<VkPresentModeKHR> presentModes(count);
+    vkGetPhysicalDeviceSurfacePresentModesKHR(m_physicalDevice, m_surface, &count, presentModes.data());
 
 	for (const auto& presentMode : presentModes) {
 		printf("Present Mode Found: %d\n", presentMode);
@@ -423,10 +420,10 @@ void VkApp::createSwapchain()
     // using  vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice, m_surface, &count, nullptr);
     // @@ Document the list you get.
 
-    std::vector<VkSurfaceFormatKHR> formats;
-	vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice, m_surface, &m_imageCount, nullptr);
-    formats.resize(m_imageCount);
-    vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice, m_surface, &m_imageCount, formats.data());
+    uint formatCount;
+	vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice, m_surface, &formatCount, nullptr);
+    std::vector<VkSurfaceFormatKHR> formats(formatCount);
+    vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice, m_surface, &formatCount, formats.data());
 
     for (const auto& format : formats) {
 		// Print out the format and color space for each surface format
@@ -505,7 +502,7 @@ void VkApp::createSwapchain()
     // @@ Do the three step process to retrieve the list of swapchain images into
     //    std::vector<VkImage> m_swapchainImages;
     // using call vkGetSwapchainImagesKHR(m_device, m_swapchain, &m_imageCount, nullptr);
-	std::vector<VkImage> m_swapchainImages;
+	//std::vector<VkImage> m_swapchainImages;
     vkGetSwapchainImagesKHR(m_device, m_swapchain, &m_imageCount, nullptr);
     m_swapchainImages.resize(m_imageCount);
 

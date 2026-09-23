@@ -31,18 +31,18 @@ void VkApp::createAllVulkanResources()
     printf("SDK Version: %d.%d.%d\n", VK_API_VERSION_MAJOR(version),
            VK_API_VERSION_MINOR(version), VK_API_VERSION_PATCH(version));
 
-    createInstance();		// -> m_instance
+    createInstance();		// -> m_instance // Print available layers and extensions
     assert(m_instance);
-    createPhysicalDevice();		// -> m_physicalDevice i.e. the GPU
+    createPhysicalDevice();		// -> m_physicalDevice i.e. the GPU // Document GPU
     chooseQueueIndex();              // -> m_graphicsQueueIndex
     createDevice();			// -> m_device
     getCommandQueue();               // -> m_queue
     loadExtensions();		// Auto generated; loads namespace of all known extensions
     getSurface(); 			// -> m_surface
 
-    createSwapchain();		// -> m_swapchain
+    createSwapchain();		// -> m_swapchain // document present modes
     createCommandPool();		// -> m_cmdPool..
-    createDepthResource();    	// -> m_depthImage, ...
+    createDepthResource();    	// -> m_depthImage, ... //resize
     //createRenderTarget();   	  	// -> m_renderTarget
     //createPostDescriptor();     	// -> m_postDesc
     createPostPipeline();       	// -> m_postPipelineLayout // Finish Reszie logic bruh
@@ -97,22 +97,23 @@ void VkApp::destroyAllVulkanResources()
     vkDestroyPipeline(m_device, m_postPipeline, nullptr);
     
     // All objects created on m_device must be destroyed before m_device.
-     //vkDestroyDevice(m_device, nullptr);
-     //vkDestroyInstance(m_instance, nullptr);
+     vkDestroyDevice(m_device, nullptr);
+     vkDestroyInstance(m_instance, nullptr);
 }
 
 void VkApp::recreateSizedVulkanResources()
 {
-    //vkDeviceWaitIdle(m_device);
+    vkDeviceWaitIdle(m_device);
 
     // @@ Delete this throw when you are ready to handle resize events:
-    throw std::runtime_error("Not ready for resize events.");
+    //throw std::runtime_error("Not ready for resize events.");
 
     // When directed to @@ RESIZE a Vulkan resource,
     //   place the destroy command here, and
     //   place the (re)create command where indicated below.
 
     // Destroy commands go below here:
+    m_depthImage.destroy(m_device);
     // Destroy commands go above here
     
     destroySwapchain();
@@ -128,10 +129,11 @@ void VkApp::recreateSizedVulkanResources()
 
     createSwapchain(); // Updates m_windowSize for the newly resized window
 
-    currentFrame = 0; //  Not sure why I need this.  Ii suspect a bug ... somewhere ...
+    currentFrame = 0; //  Not sure why I need this.  I suspect a bug ... somewhere ...
     m_commandBuffer = m_commandBuffers[currentFrame];
     
     // All (re)create commands go below here:
+    createDepthResource();
     // All (re)create commands go above here
 
 }
