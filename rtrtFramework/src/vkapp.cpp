@@ -123,6 +123,8 @@ void VkApp::recreateSizedVulkanResources()
     m_renderTarget.destroy(m_device);
     m_postDesc.destroy(m_device);
 
+    vkDestroyPipelineLayout(m_device, m_postPipelineLayout, nullptr);
+    vkDestroyPipeline(m_device, m_postPipeline, nullptr);
     vkDestroyPipelineLayout(m_device, m_scPipelineLayout, nullptr);
     vkDestroyPipeline(m_device, m_scPipeline, nullptr);
     // Destroy commands go above here
@@ -148,6 +150,7 @@ void VkApp::recreateSizedVulkanResources()
 	createRenderTarget();
 	createPostDescriptor();
 
+    createPostPipeline();
     createScPipeline();
     // All (re)create commands go above here
 
