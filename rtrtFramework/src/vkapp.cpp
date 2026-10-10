@@ -99,6 +99,8 @@ void VkApp::destroyAllVulkanResources()
     m_matrixBuff.destroy(m_device);
     m_objDescriptionBuff.destroy(m_device);
     m_scDesc.destroy(m_device);
+    vkDestroyPipelineLayout(m_device, m_scPipelineLayout, nullptr);
+    vkDestroyPipeline(m_device, m_scPipeline, nullptr);
     
     // All objects created on m_device must be destroyed before m_device.
      vkDestroyDevice(m_device, nullptr);
@@ -120,6 +122,9 @@ void VkApp::recreateSizedVulkanResources()
     m_depthImage.destroy(m_device);
     m_renderTarget.destroy(m_device);
     m_postDesc.destroy(m_device);
+
+    vkDestroyPipelineLayout(m_device, m_scPipelineLayout, nullptr);
+    vkDestroyPipeline(m_device, m_scPipeline, nullptr);
     // Destroy commands go above here
     
     destroySwapchain();
@@ -142,6 +147,8 @@ void VkApp::recreateSizedVulkanResources()
     createDepthResource();
 	createRenderTarget();
 	createPostDescriptor();
+
+    createScPipeline();
     // All (re)create commands go above here
 
 }

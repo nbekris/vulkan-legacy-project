@@ -98,7 +98,8 @@ void VkApp::createScPipeline()
     createInfo.pSetLayouts            = &m_scDesc.descSetLayout;
     createInfo.pushConstantRangeCount = 1;
     createInfo.pPushConstantRanges    = &pushConstantRange;
-    vkCreatePipelineLayout(m_device, &createInfo, nullptr, &m_scPipelineLayout);
+    VkResult resultcreateLayoutPipe = 
+        vkCreatePipelineLayout(m_device, &createInfo, nullptr, &m_scPipelineLayout);
 
     VkShaderModule vertShaderModule = createShaderModuleFromFile("spv/scanline.vert.spv");
     VkShaderModule fragShaderModule = createShaderModuleFromFile("spv/scanline.frag.spv");
@@ -222,7 +223,8 @@ void VkApp::createScPipeline()
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-    vkCreateGraphicsPipelines(m_device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
+    VkResult resultCreateGraphicsPipe = 
+        vkCreateGraphicsPipelines(m_device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
                               &m_scPipeline);
     NAME(m_scPipeline, VK_OBJECT_TYPE_PIPELINE, "scanline pipeline");
 
@@ -231,7 +233,15 @@ void VkApp::createScPipeline()
     vkDestroyShaderModule(m_device, vertShaderModule, nullptr);
 
     // @@ Verify success of vkCreateGraphicsPipelines
+    if (resultCreateGraphicsPipe != VK_SUCCESS) 
+    {
+        throw std::runtime_error("Vk Create Graphics Pipeline call failed.");
+    }
     // @@ Verify success of vkCreatePipelineLayout (found about 135 lines upward).
+    if (resultcreateLayoutPipe != VK_SUCCESS) 
+    {
+        throw std::runtime_error("Vk Create Layout Pipeline call failed");
+    }
     
     // @@ Destroy both:
     //      vkDestroyPipelineLayout(m_device, m_scPipelineLayout, nullptr);
