@@ -91,6 +91,18 @@ void VkApp::destroyModel()
     //   For each object ob in m_objData, destroy the object's 4 data buffers with:
     //        ob.vertexBuffer.destroy(m_device); 
     //        and similar for ob.indexBuffer, ob.matColorBuffer, and ob.matIndexBuffer.
+    for (auto& t : m_objText) 
+    {
+        t.destroy(m_device);
+    }
+
+    for (auto& ob : m_objData) 
+    {
+        ob.vertexBuffer.destroy(m_device);
+        ob.indexBuffer.destroy(m_device);
+        ob.matColorBuffer.destroy(m_device);
+        ob.matIndexBuffer.destroy(m_device);
+    }
 }
 
 bool VkApp::readModel(const std::string& filename, glm::mat4 transform)

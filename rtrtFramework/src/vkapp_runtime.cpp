@@ -22,7 +22,7 @@ bool VkApp::acquireFrame()
     vkWaitForFences(m_device, 1, &m_inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
         
     // Acquire the next image from the swap chain --> m_swapchainIndex
-    VkResult result = vkAcquireNextImageKHR(m_device, m_swapchain, 1000000,//UINT64_MAX, 
+    VkResult result = vkAcquireNextImageKHR(m_device, m_swapchain, /*1000000,*/UINT64_MAX, 
                                             m_imageAvailableSemaphores[currentFrame],
                                             (VkFence)VK_NULL_HANDLE, &m_swapchainIndex);
     
@@ -91,7 +91,7 @@ void VkApp::submitFrame()
     submitInfo.waitSemaphoreCount   = 1;  
     submitInfo.pWaitSemaphores = &m_imageAvailableSemaphores[currentFrame];  // waited upon before execution
     submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores    = &m_renderFinishedSemaphores[currentFrame]; // signaled when execution finishes
+    submitInfo.pSignalSemaphores    = &m_renderFinishedSemaphores[m_swapchainIndex]; // signaled when execution finishes
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &m_commandBuffer;
     VkResult submitResult = vkQueueSubmit(m_queue, 1, &submitInfo, m_inFlightFences[currentFrame]);
@@ -99,7 +99,7 @@ void VkApp::submitFrame()
     // Present frame
     VkPresentInfoKHR presentInfo{VK_STRUCTURE_TYPE_PRESENT_INFO_KHR};
     presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores    = &m_renderFinishedSemaphores[currentFrame];
+    presentInfo.pWaitSemaphores    = &m_renderFinishedSemaphores[m_swapchainIndex];
     presentInfo.swapchainCount     = 1;
     presentInfo.pSwapchains        = &m_swapchain;
     presentInfo.pImageIndices      = &m_swapchainIndex;
@@ -123,17 +123,17 @@ void VkApp::drawGUI()
     
     // @@ Once GUI is defined, you can put some gui elements on the screen
     
-    // ImGui::ShowDemoWindow();  // Turn on ImGui's demonstration of all widgets.
+     ImGui::ShowDemoWindow();  // Turn on ImGui's demonstration of all widgets.
 
-    // Display the frame rate:
-    // ImGui::Text("Rate %.3f ms/frame (%.1f FPS)",
-    //             1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+     // Display the frame rate:
+     ImGui::Text("Rate %.3f ms/frame (%.1f FPS)",
+                 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
-    // An example check box:
-    // ImGui::Checkbox("Raytrace mode", &useRaytracer);
+     // An example check box:
+     ImGui::Checkbox("Raytrace mode", &useRaytracer);
 
-    // An example slider:
-    // if (ImGui::SliderFloat("Exposure", &m_pcRay.exposure, 0.5f, 8.0f, "%.5f"))
-    //    m_pcRay.clear = true;
+     // An example slider:
+     if (ImGui::SliderFloat("Exposure", &m_pcRay.exposure, 0.5f, 8.0f, "%.5f"))
+        m_pcRay.clear = true;
 
 }

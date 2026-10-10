@@ -43,8 +43,8 @@ void VkApp::createAllVulkanResources()
     createSwapchain();		// -> m_swapchain // document present modes
     createCommandPool();		// -> m_cmdPool..
     createDepthResource();    	// -> m_depthImage, ... //resize
-    //createRenderTarget();   	  	// -> m_renderTarget
-    //createPostDescriptor();     	// -> m_postDesc
+    createRenderTarget();   	  	// -> m_renderTarget
+    createPostDescriptor();     	// -> m_postDesc
     createPostPipeline();       	// -> m_postPipelineLayout // Finish Reszie logic bruh
 
     #ifdef GUI
@@ -52,13 +52,13 @@ void VkApp::createAllVulkanResources()
     #endif
 
     // Load model and create related entities
-    // createModel();
-    // createMatrixBuffer();
-    // createObjDescriptionBuffer();
+    createModel();
+    createMatrixBuffer();
+    createObjDescriptionBuffer();
     
     // Scanline: Initialize scanline capabilities
-    // createScDescriptorSet();
-    // createScPipeline();
+    createScDescriptorSet();
+    createScPipeline();
 
     // Raycasting: Initialize ray tracing capabilities
     // createRtBuffers();
@@ -95,6 +95,10 @@ void VkApp::destroyAllVulkanResources()
     m_depthImage.destroy(m_device);
     vkDestroyPipelineLayout(m_device, m_postPipelineLayout, nullptr);
     vkDestroyPipeline(m_device, m_postPipeline, nullptr);
+    destroyModel();
+    m_matrixBuff.destroy(m_device);
+    m_objDescriptionBuff.destroy(m_device);
+    m_scDesc.destroy(m_device);
     
     // All objects created on m_device must be destroyed before m_device.
      vkDestroyDevice(m_device, nullptr);
@@ -114,6 +118,8 @@ void VkApp::recreateSizedVulkanResources()
 
     // Destroy commands go below here:
     m_depthImage.destroy(m_device);
+    m_renderTarget.destroy(m_device);
+    m_postDesc.destroy(m_device);
     // Destroy commands go above here
     
     destroySwapchain();
@@ -134,6 +140,8 @@ void VkApp::recreateSizedVulkanResources()
     
     // All (re)create commands go below here:
     createDepthResource();
+	createRenderTarget();
+	createPostDescriptor();
     // All (re)create commands go above here
 
 }

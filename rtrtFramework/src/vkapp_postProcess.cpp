@@ -30,7 +30,8 @@ void VkApp::createDepthResource()
 void VkApp::createPostDescriptor()
 {
     m_postDesc.setBindings(m_device, {
-            {0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT}
+            {0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 
+            1, VK_SHADER_STAGE_FRAGMENT_BIT}
         });
     
     m_postDesc.write(m_device, 0, m_renderTarget.Descriptor());
@@ -45,19 +46,20 @@ void VkApp::createPostPipeline()
     // Create the pipeline layout
     ////////////////////////////////////////////
     VkPushConstantRange pushConstantRange = {
-        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantPost)};
+        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 
+        0, sizeof(PushConstantPost)};
 
     // Creating the pipeline layout
     VkPipelineLayoutCreateInfo createInfo{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
 
 
     // @@ Project 1: The best we can do for now:
-    createInfo.setLayoutCount         = 0;
-    createInfo.pSetLayouts            = nullptr;
+    //createInfo.setLayoutCount         = 0;
+    //createInfo.pSetLayouts            = nullptr;
     
     // @@ Projects 2 and beyond: What we eventually need:
-    //createInfo.setLayoutCount         = 1;
-    //createInfo.pSetLayouts            = &m_postDesc.descSetLayout;
+    createInfo.setLayoutCount         = 1;
+    createInfo.pSetLayouts            = &m_postDesc.descSetLayout;
     
     createInfo.pushConstantRangeCount = 1;
     createInfo.pPushConstantRanges    = &pushConstantRange;
@@ -269,8 +271,9 @@ void VkApp::postProcess()
             / static_cast<float>(m_windowSize.height);
         vkCmdBindPipeline(m_commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_postPipeline);
         // @@ Eventually uncomment this, after the descriptor set m_postDesc has been created.
-        //vkCmdBindDescriptorSets(m_commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-        //                        m_postPipelineLayout, 0, 1, &m_postDesc.descSet, 0, nullptr);
+        vkCmdBindDescriptorSets(m_commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                m_postPipelineLayout, 0, 1, 
+                                &m_postDesc.descSet, 0, nullptr);
         PushConstantPost pcPost {
             m_windowSize.width,
             m_windowSize.height
