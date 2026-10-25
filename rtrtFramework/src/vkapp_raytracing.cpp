@@ -43,6 +43,10 @@ void VkApp::destroyRtBuffers()
 {
     // @@ Destroy m_rtColCurrBuffer with m_rtColCurrBuffer.destroy(m_device)
     //   and eventually destroy the 5 other buffers.
+
+    m_rtColCurrBuffer.destroy(m_device);
+
+	// @@ Eventually destroy the 5 other buffers similarly.
 }
 
 // Initialize ray tracing
@@ -71,6 +75,8 @@ void VkApp::initRayTracing()
     // acceleration structure), or at program shutdown (when
     // everything else is destroyed).  Both options work for me, but
     // one student found validation errors if done here.
+
+    m_rtBuilder.destroy(); // if this throws validation error, try in program shutdown
 }
 
 //-------------------------------------------------------------------------------------------------

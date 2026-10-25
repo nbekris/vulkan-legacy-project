@@ -61,11 +61,11 @@ void VkApp::createAllVulkanResources()
     createScPipeline();
 
     // Raycasting: Initialize ray tracing capabilities
-    // createRtBuffers();
-    // initRayTracing();
-    // createRtAccelerationStructure();
-    // createRtDescriptorSet();
-    // createRtPipeline();
+    createRtBuffers();
+    initRayTracing();
+    createRtAccelerationStructure();
+    createRtDescriptorSet();
+    createRtPipeline();
     // createRtShaderBindingTable();
 
     // Denoising: Initialize denoising capabilities
@@ -101,6 +101,10 @@ void VkApp::destroyAllVulkanResources()
     m_scDesc.destroy(m_device);
     vkDestroyPipelineLayout(m_device, m_scPipelineLayout, nullptr);
     vkDestroyPipeline(m_device, m_scPipeline, nullptr);
+
+    destroyRtBuffers();
+    m_rtBuilder.destroy();
+    m_rtDesc.destroy(m_device);
     
     // All objects created on m_device must be destroyed before m_device.
      vkDestroyDevice(m_device, nullptr);
@@ -130,6 +134,8 @@ void VkApp::recreateSizedVulkanResources()
     // Destroy commands go above here
     
     destroySwapchain();
+    destroyRtBuffers();
+    // descriptor set might need resizing call
     
     // Get new window size.
     int width = 0, height = 0;
@@ -152,6 +158,8 @@ void VkApp::recreateSizedVulkanResources()
 
     createPostPipeline();
     createScPipeline();
+
+    createRtBuffers();
     // All (re)create commands go above here
 
 }
