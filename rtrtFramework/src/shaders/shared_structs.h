@@ -89,9 +89,9 @@ struct PushConstantRaster
 struct PushConstantRay
 {
     // @@ Raycasting:	Declare 3 temporary light values.  
-    //   ALIGNAS(16) vec3 scLightPos;
-    //   ALIGNAS(16) vec3 scLightInt;
-    //   ALIGNAS(16) vec3 scLightAmb;
+       ALIGNAS(16) vec3 scLightPos;
+       ALIGNAS(16) vec3 scLightInt;
+       ALIGNAS(16) vec3 scLightAmb;
     // @@ Pathtracing:	Remove those 3 temporary light values. 
     // @@ History:	 ...
     // @@ Denoise:	 ...

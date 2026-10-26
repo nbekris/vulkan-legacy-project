@@ -66,7 +66,7 @@ void VkApp::createAllVulkanResources()
     createRtAccelerationStructure();
     createRtDescriptorSet();
     createRtPipeline();
-    // createRtShaderBindingTable();
+    createRtShaderBindingTable();
 
     // Denoising: Initialize denoising capabilities
     // createDenoiseBuffer();
@@ -105,6 +105,10 @@ void VkApp::destroyAllVulkanResources()
     destroyRtBuffers();
     m_rtBuilder.destroy();
     m_rtDesc.destroy(m_device);
+
+    vkDestroyPipelineLayout(m_device, m_rtPipelineLayout, nullptr);
+    vkDestroyPipeline(m_device, m_rtPipeline, nullptr);
+    m_shaderBindingTableBuff.destroy(m_device);
     
     // All objects created on m_device must be destroyed before m_device.
      vkDestroyDevice(m_device, nullptr);
@@ -131,6 +135,9 @@ void VkApp::recreateSizedVulkanResources()
     vkDestroyPipeline(m_device, m_postPipeline, nullptr);
     vkDestroyPipelineLayout(m_device, m_scPipelineLayout, nullptr);
     vkDestroyPipeline(m_device, m_scPipeline, nullptr);
+
+    vkDestroyPipelineLayout(m_device, m_rtPipelineLayout, nullptr);
+    vkDestroyPipeline(m_device, m_rtPipeline, nullptr);
     // Destroy commands go above here
     
     destroySwapchain();
@@ -160,6 +167,7 @@ void VkApp::recreateSizedVulkanResources()
     createScPipeline();
 
     createRtBuffers();
+    createRtPipeline();
     // All (re)create commands go above here
 
 }

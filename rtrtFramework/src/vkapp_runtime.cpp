@@ -50,10 +50,10 @@ void VkApp::renderFrame()
         updateCameraBuffer();
         
         // Draw scene
-        // if (useRaytracer) {
-        //     raytrace();`
+        if (useRaytracer) {
+            raytrace();
         //     denoise();
-        // } else
+        } else
              rasterize();
         
          postProcess(); //  tone mapper and output to swapchain image.
