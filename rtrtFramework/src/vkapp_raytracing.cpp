@@ -27,6 +27,7 @@ void VkApp::createRtBuffers()
     VkImageLayout layout = VK_IMAGE_LAYOUT_GENERAL;
 
     initImageWrap(m_rtColCurrBuffer, m_windowSize, format, flags, mem, aspect, layout);
+    m_pcRay.clear = true; // A newly allocated image has no accumulated samples.
     // @@ Eventually there will be 5 more buffers similarly created, and named:
     //    m_rtColPrevBuffer,
     //    m_rtKdCurrBuffer, 
@@ -53,6 +54,8 @@ void VkApp::destroyRtBuffers()
 void VkApp::initRayTracing()
 {
     m_pcRay.exposure = 2.0;
+    // Path tracing
+    m_pcRay.rr = 0.7;
     
     // Requesting ray tracing properties
     VkPhysicalDeviceProperties2 prop2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
@@ -322,15 +325,24 @@ void VkApp::createRtShaderBindingTable()
 
 void VkApp::raytrace()
 {
+    // Choose an independent path sample each frame. Keep rr a probability.
+    m_pcRay.frameSeed = rand() % 32768;
+    m_pcRay.depth = 1;
+    while (float(rand()) / RAND_MAX < m_pcRay.rr) m_pcRay.depth++;
+    m_pcRay.depth = std::min(m_pcRay.depth, 4);
+    // Preserve resets requested by buffer creation or the exposure control.
+    m_pcRay.clear = m_pcRay.clear || app->myCamera.modified;
+    app->myCamera.modified = false;
+
     // Fill in the push constant m_pcRay (of class PushConstantRay as
     // defined in shaders/shared_structs.h) for the ray tracing
     // pipeline.  Each of the following projects, RayCasting,
     // PathTracing, History, and Denoise will modify this structure.
     
     // @@ Raycasting:	As directed in the project 3 document, provide 3 temporary light values.
-    m_pcRay.scLightPos = scLightPos;
-	m_pcRay.scLightInt = scLightInt;
-    m_pcRay.scLightAmb = scLightAmb;
+ //   m_pcRay.scLightPos = scLightPos;
+	//m_pcRay.scLightInt = scLightInt;
+ //   m_pcRay.scLightAmb = scLightAmb;
     // @@ Pathtracing:	As directed in the project 4 document, remove 3 temporary light values.
     // @@ History:	As directed in the project 5 document, ...
     // @@ Denoise:	As directed in the project 6 document, ...

@@ -9,7 +9,7 @@ struct InputState {bool lmb=false; bool mmb=false; bool rmb=false;
 class Camera
 {
  public:
-    bool modified;
+    bool modified = true;
     float ry;
     float front;
     float back;

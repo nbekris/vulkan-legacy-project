@@ -88,11 +88,11 @@ void VkApp::destroyAllVulkanResources()
     #endif
 
     // Destroy here all Vulkan objects as directed by various @@ comments.
-    vkDestroyInstance(m_instance, nullptr);
-    vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
     destroySwapchain();
     vkDestroyCommandPool(m_device, m_cmdPool, nullptr);
     m_depthImage.destroy(m_device);
+    m_renderTarget.destroy(m_device);
+    m_postDesc.destroy(m_device);
     vkDestroyPipelineLayout(m_device, m_postPipelineLayout, nullptr);
     vkDestroyPipeline(m_device, m_postPipeline, nullptr);
     destroyModel();
@@ -111,8 +111,10 @@ void VkApp::destroyAllVulkanResources()
     m_shaderBindingTableBuff.destroy(m_device);
     
     // All objects created on m_device must be destroyed before m_device.
-     vkDestroyDevice(m_device, nullptr);
-     vkDestroyInstance(m_instance, nullptr);
+    vkDestroyDevice(m_device, nullptr);
+    // The surface must outlive its swapchain, and the instance its children.
+    vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
+    vkDestroyInstance(m_instance, nullptr);
 }
 
 void VkApp::recreateSizedVulkanResources()
